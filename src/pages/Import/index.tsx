@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+// import { useHistory } from 'react-router-dom';
+import { AxiosResponse } from 'axios';
 
 import filesize from 'filesize';
 
@@ -20,22 +21,39 @@ interface FileProps {
 
 const Import: React.FC = () => {
   const [uploadedFiles, setUploadedFiles] = useState<FileProps[]>([]);
-  const history = useHistory();
+  // const history = useHistory();
 
   async function handleUpload(): Promise<void> {
     // const data = new FormData();
 
-    // TODO
+    await Promise.all(
+      uploadedFiles.map(
+        async (file): Promise<AxiosResponse<any>> => {
+          const formData = new FormData();
+          formData.append('file', file.file);
 
-    try {
-      // await api.post('/transactions/import', data);
-    } catch (err) {
-      // console.log(err.response.error);
-    }
+          return api.post('/transactions/import', formData);
+        },
+      ),
+    );
+
+    setUploadedFiles([]);
+
+    // try {
+    //   // await api.post('/transactions/import', data);
+    // } catch (err) {
+    //   // console.log(err.response.error);
+    // }
   }
 
   function submitFile(files: File[]): void {
-    // TODO
+    const fileList = files.map((file) => {
+      const { name, size } = file;
+
+      return { file, name, readableSize: filesize(size) };
+    });
+
+    setUploadedFiles([...uploadedFiles, ...fileList]);
   }
 
   return (
